@@ -21,9 +21,9 @@ router.post('/create', async (req, res) => {
   const sql = 'INSERT INTO tasks (title, description, priority, status) VALUES (?, ?, ?, ?)';
   try {
     const result = await query(sql, [title, description, priority, status]);
-    res.json({ task_id: result.insertId, message: 'Task created' });
+    res.json({ task_id: result.insertId, message: '任务创建成功' });
   } catch (err) {
-    res.status(500).json({ message: 'Error creating task', error: err.message });
+    res.status(500).json({ message: '创建任务失败', error: err.message });
   }
 });
 
@@ -58,9 +58,9 @@ router.post('/update', async (req, res) => {
   try {
     const result = await query(sql, params);
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Task not found' });
-    res.json({ message: 'Task updated' });
+    res.json({ message: '任务修改成功' });
   } catch (err) {
-    res.status(500).json({ message: 'Error updating task', error: err.message });
+    res.status(500).json({ message: '任务修改失败', error: err.message });
   }
 });
 
@@ -79,9 +79,9 @@ router.post('/delete', async (req, res) => {
   try {
     const result = await query(sql, [task_id]);
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Task not found' });
-    res.json({ message: 'Task deleted' });
+    res.json({ message: '任务删除成功' });
   } catch (err) {
-    res.status(500).json({ message: 'Error deleting task', error: err.message });
+    res.status(500).json({ message: '任务删除失败', error: err.message });
   }
 });
 
@@ -123,7 +123,7 @@ router.post('/list', async (req, res) => {
 
     res.json({ tasks: results, total, page, limit });
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching tasks', error: err.message });
+    res.status(500).json({ message: '获取任务列表失败', error: err.message });
   }
 });
 
@@ -143,9 +143,9 @@ router.post('/update-status', async (req, res) => {
   try {
     const result = await query(sql, [status, task_id]);
     if (result.affectedRows === 0) return res.status(404).json({ message: 'Task not found' });
-    res.json({ message: 'Status updated' });
+    res.json({ message: '更新状态成功' });
   } catch (err) {
-    res.status(500).json({ message: 'Error updating status', error: err.message });
+    res.status(500).json({ message: '更新状态失败', error: err.message });
   }
 });
 
