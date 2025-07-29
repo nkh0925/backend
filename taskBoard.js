@@ -85,26 +85,37 @@ router.post('/delete', async (req, res) => {
   }
 });
 
-// 获取任务列表
+// 获取任务列表（添加 status 过滤）
 router.post('/list', async (req, res) => {
   const schema = Joi.object({
     search: Joi.string().optional().default(''),
-    page: Joi.number().integer().min(1).default(1)
+    page: Joi.number().integer().min(1).default(1),
+    status: Joi.number().integer().min(0).max(2).optional() // 新增 status 参数
   });
 
   const { error, value } = schema.validate(req.body);
   if (error) return res.status(400).json({ message: error.details[0].message });
 
-  const { search, page } = value;
+  const { search, page, status } = value;
 
-  const limit = 20;
+  const limit = 5;
   const offset = (page - 1) * limit;
 
   let sql = 'SELECT * FROM tasks';
   let params = [];
+  let whereClauses = [];
+
+  if (status !== undefined) {
+    whereClauses.push('status = ?');
+    params.push(status);
+  }
   if (search) {
-    sql += ' WHERE title LIKE ? OR description LIKE ?';
-    params = [`%${search}%`, `%${search}%`];
+    whereClauses.push('(title LIKE ? OR description LIKE ?)');
+    params.push(`%${search}%`, `%${search}%`);
+  }
+
+  if (whereClauses.length > 0) {
+    sql += ' WHERE ' + whereClauses.join(' AND ');
   }
   sql += ' LIMIT ? OFFSET ?';
   params.push(limit, offset);
@@ -114,9 +125,19 @@ router.post('/list', async (req, res) => {
     // 计算总任务数
     let countSql = 'SELECT COUNT(*) as total FROM tasks';
     let countParams = [];
+    let countWhereClauses = [];
+
+    if (status !== undefined) {
+      countWhereClauses.push('status = ?');
+      countParams.push(status);
+    }
     if (search) {
-      countSql += ' WHERE title LIKE ? OR description LIKE ?';
-      countParams = [`%${search}%`, `%${search}%`];
+      countWhereClauses.push('(title LIKE ? OR description LIKE ?)');
+      countParams.push(`%${search}%`, `%${search}%`);
+    }
+
+    if (countWhereClauses.length > 0) {
+      countSql += ' WHERE ' + countWhereClauses.join(' AND ');
     }
     const countResult = await query(countSql, countParams);
     const total = countResult[0].total;
